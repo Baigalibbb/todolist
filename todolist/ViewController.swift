@@ -8,17 +8,21 @@
 import UIKit
 
 class ViewController: UIViewController {
-    @IBOutlet weak var textfield: UITextField!
+    
+    @IBOutlet weak var a: UITextView!
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
     }
 
+    
+    
     @IBAction func addtask(_ sender: Any) {
         let defaults = UserDefaults.standard
         
-        let taskName = textfield.text!
+        let taskName = a.text!
         
         var newTask = TaskItem()
         
@@ -27,7 +31,19 @@ class ViewController: UIViewController {
         var taskarray:[TaskItem] = []
         
         do{
-            
+            if let data = defaults.data(forKey: "taskItemArray"){
+                var array = try JSONDecoder().decode([TaskItem].self, from: data)
+                
+                array.append(newTask)
+                
+                let encodedata = try JSONEncoder().encode(array)
+                
+                defaults.set(encodedata, forKey: "taskItemArray")
+            } else{
+                let encodedata = try JSONEncoder().encode([newTask])
+                
+                defaults.set(encodedata, forKey: "taskItemArray")
+            }
         } catch{
             print("unable")
         }
@@ -56,7 +72,7 @@ class ViewController: UIViewController {
 //            defaults.setValue(array, forKey: "taskArray")
 //        }
         
-        textfield.text = ""
+        a.text = ""
     }
     
 }

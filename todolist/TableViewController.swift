@@ -9,7 +9,7 @@ import UIKit
 
 class TableViewController: UITableViewController {
     
-    var arraytask = ["123", "456"]
+    var arraytask: [TaskItem] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -24,15 +24,37 @@ class TableViewController: UITableViewController {
 override func viewWillAppear(_ animated: Bool) {
     let defaults = UserDefaults.standard
     
-    if let array = defaults.array(forKey: "taskArray"){
-        arraytask = array as! [String]
+    do{
+        if let data = defaults.data(forKey: "taskItemArray"){
+            var array = try JSONDecoder().decode([TaskItem].self, from: data)
+            
+            arraytask = array
+        }
+    } catch{
+        print("unable")
     }
+    
+//    if let array = defaults.array(forKey: "taskArray"){
+//        arraytask = array as! [String]
+//    }
+    
     tableView.reloadData()
 }
     
     func saveTasks() {
         let defaults = UserDefaults.standard
-        defaults.setValue(arraytask, forKey: "taskArray")
+        
+        do{
+            
+                let encodedata = try JSONEncoder().encode(arraytask)
+                
+                defaults.set(encodedata, forKey: "taskItemArray")
+            
+        } catch{
+            print("unable")
+        }
+        
+//        defaults.setValue(arraytask, forKey: "taskArray")
     }
     // MARK: - Table view data source
 
@@ -50,11 +72,25 @@ override func viewWillAppear(_ animated: Bool) {
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell.init(style: .default, reuseIdentifier: "cell")
 
-        cell.textLabel?.text = arraytask[indexPath.row]
+        cell.textLabel?.text = arraytask[indexPath.row].name
+        
+        if arraytask[indexPath.row].isComplite{
+            cell.accessoryType = .checkmark
+        } else{
+            cell.accessoryType = .none
+        }
 
         return cell
     }
 
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
+        arraytask[indexPath.row].isComplite.toggle()
+        
+        tableView.reloadData()
+        
+        saveTasks()
+    }
 
     /*
     // Override to support conditional editing of the table view.
